@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitBuddy – AI Fitness Plan Generator</title>
+  <meta name="description" content="Generate personalized 7-day workout plans powered by Gemini AI.">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <span class="logo-badge">⚡</span>
+        <span class="brand-text">Fit<span class="text-accent">Buddy</span></span>
+      </a>
+      <nav class="nav-menu">
+        <a href="/" class="nav-link active">Home</a>
+        <a href="/users" class="nav-link">Users</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="#create-plan" class="btn btn-primary btn-sm">Create Plan</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="page-container">
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <span class="eyebrow-badge">AI-Powered Fitness Planning</span>
+        <h1 class="hero-title">Your AI-Powered Fitness Journey</h1>
+        <p class="hero-subtitle">
+          Generate a personalized 7-day workout plan designed around your goals, body profile and preferred workout intensity.
+        </p>
+        <div class="hero-features">
+          <span class="feature-item">✓ 7-Day Progressive Splits</span>
+          <span class="feature-item">✓ Evidence-Based Recovery</span>
+          <span class="feature-item">✓ Adaptive Feedback Refinement</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error Alert Banner -->
+    {% if error %}
+    <div class="alert alert-error">
+      <span>⚠️</span>
+      <div>
+        <strong>Validation / System Notice:</strong> {{ error }}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Create Your Fitness Plan Card -->
+    <section id="create-plan" class="form-section">
+      <div class="card form-card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Create Your Fitness Plan</h2>
+            <p class="card-desc">Enter your body metrics to synthesize an optimal 7-day workout schedule.</p>
+          </div>
+          <span class="endpoint-badge">POST /generate-plan</span>
+        </div>
+
+        <form action="/generate-plan" method="POST" class="fitness-form" id="planForm">
+          <div class="form-grid">
+            
+            <!-- 1. Name -->
+            <div class="form-group">
+              <label for="name" class="form-label">
+                <span>Full Name / Username</span>
+                <span class="field-hint">name="name"</span>
+              </label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                required 
+                placeholder="e.g. Alex Morgan"
+                class="form-input"
+                value="{{ form_data.name if form_data else '' }}"
+              >
+            </div>
+
+            <!-- 2. User ID -->
+            <div class="form-group">
+              <label for="user_id" class="form-label">
+                <span>User ID / Student ID</span>
+                <span class="field-hint">name="user_id"</span>
+              </label>
+              <input 
+                type="text" 
+                id="user_id" 
+                name="user_id" 
+                required 
+                placeholder="e.g. USR-1042"
+                class="form-input font-mono"
+                value="{{ form_data.user_id if form_data else '' }}"
+              >
+            </div>
+
+            <!-- 3. Age -->
+            <div class="form-group">
+              <label for="age" class="form-label">
+                <span>Age (Years)</span>
+                <span class="field-hint">name="age"</span>
+              </label>
+              <input 
+                type="number" 
+                id="age" 
+                name="age" 
+                min="10" 
+                max="100" 
+                required 
+                placeholder="e.g. 24"
+                class="form-input font-mono"
+                value="{{ form_data.age if form_data else '' }}"
+              >
+            </div>
+
+            <!-- 4. Weight -->
+            <div class="form-group">
+              <label for="weight" class="form-label">
+                <span>Weight (kg)</span>
+                <span class="field-hint">name="weight"</span>
+              </label>
+              <input 
+                type="number" 
+                id="weight" 
+                name="weight" 
+                step="0.1" 
+                min="20" 
+                max="300" 
+                required 
+                placeholder="e.g. 72.5"
+                class="form-input font-mono"
+                value="{{ form_data.weight if form_data else '' }}"
+              >
+            </div>
+
+            <!-- 5. Fitness Goal -->
+            <div class="form-group">
+              <label for="fitness_goal" class="form-label">
+                <span>Fitness Goal</span>
+                <span class="field-hint">name="fitness_goal"</span>
+              </label>
+              <select id="fitness_goal" name="fitness_goal" required class="form-select">
+                <option value="muscle gain" {% if form_data and (form_data.fitness_goal == 'muscle gain' or form_data.goal == 'muscle gain') %}selected{% endif %}>Muscle Gain (Hypertrophy & Strength)</option>
+                <option value="weight loss" {% if form_data and (form_data.fitness_goal == 'weight loss' or form_data.goal == 'weight loss') %}selected{% endif %}>Weight Loss (Fat Loss & Conditioning)</option>
+                <option value="general fitness" {% if not form_data or form_data.fitness_goal == 'general fitness' or form_data.goal == 'general fitness' %}selected{% endif %}>General Fitness (Stamina & Health)</option>
+                <option value="endurance" {% if form_data and (form_data.fitness_goal == 'endurance' or form_data.goal == 'endurance') %}selected{% endif %}>Endurance & Stamina</option>
+              </select>
+            </div>
+
+            <!-- 6. Workout Intensity -->
+            <div class="form-group">
+              <label for="workout_intensity" class="form-label">
+                <span>Workout Intensity</span>
+                <span class="field-hint">name="workout_intensity"</span>
+              </label>
+              <select id="workout_intensity" name="workout_intensity" required class="form-select">
+                <option value="low" {% if form_data and (form_data.workout_intensity == 'low' or form_data.intensity == 'low') %}selected{% endif %}>Low (Beginner / Light)</option>
+                <option value="medium" {% if not form_data or form_data.workout_intensity == 'medium' or form_data.intensity == 'medium' %}selected{% endif %}>Medium (Moderate / Regular)</option>
+                <option value="high" {% if form_data and (form_data.workout_intensity == 'high' or form_data.intensity == 'high') %}selected{% endif %}>High (Advanced / High Volume)</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="form-actions" style="margin-top: 1.5rem;">
+            <button type="submit" id="generateBtn" class="btn btn-primary btn-block">
+              <span>Generate 7-Day Plan with Gemini</span>
+              <span>→</span>
+            </button>
+            <div id="loadingIndicator" class="loading-box">
+              <div class="spinner"></div>
+              <span>Synthesizing your personalized 7-day routine with Gemini AI...</span>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <span>FitBuddy – AI Fitness Plan Generator</span>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitBuddy Users – Admin Dashboard</title>
+  <meta name="description" content="View registered FitBuddy users and their stored workout routines.">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <span class="logo-badge">⚡</span>
+        <span class="brand-text">Fit<span class="text-accent">Buddy</span></span>
+      </a>
+      <nav class="nav-menu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/users" class="nav-link active">Users</a>
+      </nav>
+      <div class="nav-actions">
+        <a href="/" class="btn btn-primary btn-sm">+ New Plan</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+    
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-breadcrumbs">
+        <span>Admin Console</span> / <span class="font-mono text-accent">SQLite Database</span>
+      </div>
+      <h1 class="page-title">Registered Users & Saved Plans</h1>
+      <p class="page-subtitle">Registered athlete profiles and personalized Gemini workout plans stored in SQLite.</p>
+    </div>
+
+    <!-- Summary Metric Cards -->
+    <section class="stats-row" style="margin-bottom: 2rem;">
+      <div class="stat-card card">
+        <span class="stat-label">Total Users</span>
+        <span class="stat-number font-mono">{{ total_users }}</span>
+        <span class="text-muted" style="font-size: 0.75rem;">Registered SQLite records</span>
+      </div>
+
+      <div class="stat-card card">
+        <span class="stat-label">Total Plans</span>
+        <span class="stat-number font-mono">{{ total_plans }}</span>
+        <span class="text-muted" style="font-size: 0.75rem;">7-Day Splits Synthesized</span>
+      </div>
+
+      <div class="stat-card card">
+        <span class="stat-label">Updated Plans</span>
+        <span class="stat-number font-mono text-accent">{{ updated_plans }}</span>
+        <span class="text-muted" style="font-size: 0.75rem;">Gemini Feedback Revisions (Milestone 3)</span>
+      </div>
+    </section>
+
+    <!-- Users Table Card -->
+    <section class="table-section">
+      <div class="card table-card" style="padding: 0; overflow: hidden;">
+        <div class="table-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h2 class="card-title">Registered User Directory</h2>
+          <span class="endpoint-badge">FastAPI: GET /users</span>
+        </div>
+
+        <div class="table-container" style="border: none; border-radius: 0;">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th class="text-center">Age</th>
+                <th class="text-center">Weight</th>
+                <th>Goal</th>
+                <th class="text-center">Intensity</th>
+                <th>Plan ID</th>
+                <th class="text-center">Status</th>
+                <th>Created Date</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if users and users|length > 0 %}
+                {% for u in users %}
+                <tr>
+                  <td class="font-mono text-accent font-bold">{{ u.user_id }}</td>
+                  <td class="font-bold">{{ u.username if u.username is defined else (u.name if u.name is defined else '-') }}</td>
+                  <td class="text-center font-mono">{{ u.age }}</td>
+                  <td class="text-center font-mono">{{ u.weight }} kg</td>
+                  <td style="text-transform: capitalize;">{{ u.goal if u.goal is defined else (u.fitness_goal if u.fitness_goal is defined else '-') }}</td>
+                  <td class="text-center font-bold text-accent" style="text-transform: capitalize;">{{ u.intensity if u.intensity is defined else (u.workout_intensity if u.workout_intensity is defined else '-') }}</td>
+                  <td class="font-mono text-muted text-xs">
+                    {% if u.plan_id %}
+                      #{{ u.plan_id }}
+                    {% elif u.plans and u.plans|length > 0 %}
+                      #{{ u.plans[-1].id }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    {% if u.is_updated %}
+                    <span class="badge badge-updated">Updated</span>
+                    {% else %}
+                    <span class="badge badge-active">Active</span>
+                    {% endif %}
+                  </td>
+                  <td class="font-mono text-muted" style="font-size: 0.8rem;">
+                    {{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at is defined and u.created_at.strftime is defined else u.created_at }}
+                  </td>
+                  <td class="text-right">
+                    {% set target_plan_id = u.plan_id if u.plan_id else (u.plans[-1].id if u.plans and u.plans|length > 0 else None) %}
+                    {% if target_plan_id %}
+                    <a href="/plans/{{ target_plan_id }}" class="btn btn-secondary btn-sm" style="padding: 0.3rem 0.65rem; font-size: 0.75rem;">
+                      View Plan &rarr;
+                    </a>
+                    {% else %}
+                    <span class="text-muted" style="font-size: 0.75rem;">No Plan</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="10" class="text-center text-muted" style="padding: 3rem 1.5rem;">
+                    No user records found yet in the SQLite database.
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Navigation -->
+    <div style="text-align: center; margin-top: 2.5rem;">
+      <a href="/" class="btn btn-primary">&larr; Return to Homepage</a>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <span>FitBuddy – AI Fitness Plan Generator</span>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
