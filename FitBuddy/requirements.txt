@@ -6,3 +6,4 @@ python-multipart>=0.0.9
 sqlalchemy>=2.0.30
 google-genai>=0.1.1
 pydantic>=2.7.0
+gunicorn
